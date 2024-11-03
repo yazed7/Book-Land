@@ -1,0 +1,395 @@
+﻿@using System.Security.Claims
+@using Bookify.Abstractions
+@using Bookify.Services.Contracts
+@inject IConfiguration configuration
+@inject IHttpContextAccessor contextAccessor
+@inject IShoppingCartService shoppingCartService
+@inject IWishlistService wishlistService
+@{
+	string? baseUrl = string.Empty;
+
+	if (contextAccessor.HttpContext!.Request.IsHttps)
+		baseUrl = configuration["BaseUrl"];
+	else
+		baseUrl = configuration["FullbackUrl"];
+
+	Result<int> shoppingCartItemsCountResult = await shoppingCartService.GetItemsCountInBasketAsync(Guid.Parse(configuration["shoppingCartKey"]!));
+
+	var wishlistItemsCountResult = await wishlistService.GetUserWishlistItemsCountAsync();
+
+
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<!-- Meta -->
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="keywords" content="" />
+	<meta name="author" content="DexignZone" />
+	<meta name="robots" content="" />
+	<meta name="description" content="Bookland-Book Store Ecommerce" />
+	<meta property="og:title" content="Bookland-Book Store Ecommerce" />
+	<meta property="og:description" content="Bookland-Book Store Ecommerce" />
+	<meta property="og:image" content="https://makaanlelo.com/tf_products_007/bookland/xhtml/social-image.png" />
+	<meta name="format-detection" content="telephone=no">
+
+	<!-- FAVICONS ICON -->
+	<link rel="icon" type="image/x-icon" href="~/images/favicon.png" />
+
+	<!-- PAGE TITLE HERE -->
+	<title>Bookland Book Store - @ViewData["Title"]</title>
+
+	<!-- MOBILE SPECIFIC -->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- STYLESHEETS -->
+	<link rel="stylesheet" type="text/css" href="~/icons/fontawesome/css/all.min.css">
+	<link rel="stylesheet" type="text/css" href="~/vendor/swiper/swiper-bundle.min.css">
+	<link rel="stylesheet" type="text/css" href="~/vendor/animate/animate.css">
+	<link rel="stylesheet" type="text/css" href="~/css/master.css">
+    <link href="~/css/bookcard.css" rel="stylesheet" />
+    <link href="~/css/stylesignup.css" rel="stylesheet" />
+    <link href="~/css/style404.css" rel="stylesheet" />
+    <link href="~/css/stylecontact.css" rel="stylesheet" />
+    <link href="~/css/stylelogin.css" rel="stylesheet" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="~/css/orders.css" rel="stylesheet" />
+
+
+	<!-- GOOGLE FONTS-->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link
+		href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap"
+		rel="stylesheet">
+</head>
+
+<body>
+
+	<div class="page-wraper">
+		<div id="loading-area" class="preloader-wrapper-1">
+			<div class="preloader-inner">
+				<div class="preloader-shade"></div>
+				<div class="preloader-wrap"></div>
+				<div class="preloader-wrap wrap2"></div>
+				<div class="preloader-wrap wrap3"></div>
+				<div class="preloader-wrap wrap4"></div>
+				<div class="preloader-wrap wrap5"></div>
+			</div>
+		</div>
+		
+
+		<!-- Header -->
+		<header class="site-header mo-left header style-1">
+
+			<div class="header-info-bar">
+				<div class="container clearfix">
+
+					<div class="logo-header logo-dark">
+						<a asp-action="Index" asp-controller="Home"><img src="~/images/logo.png" alt="logo"></a>
+					</div>
+
+
+					<div class="extra-nav">
+						<div class="extra-cell">
+							<ul class="navbar-nav header-right">
+							
+							@if(User.Identity!.IsAuthenticated)
+							{
+									<li class="nav-item">
+										<a class="nav-link" asp-action="Index" asp-controller="Wishlist">
+											<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+											width="24px" fill="#000000">
+												<path d="M0 0h24v24H0V0z" fill="none" />
+												<path
+												d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z" />
+											</svg>
+											@if (wishlistItemsCountResult is not null && wishlistItemsCountResult.IsSuccess)
+											{
+												<span class="badge">@wishlistItemsCountResult.Value</span>
+											}
+										</a>
+								</li>
+
+									<li class="nav-item">
+										<button type="button" class="nav-link box cart-btn">
+											<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+											width="24px" fill="#000000">
+												<path d="M0 0h24v24H0V0z" fill="none" />
+												<path
+												d="M15.55 13c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.37-.66-.11-1.48-.87-1.48H5.21l-.94-2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7l1.1-2h7.45zM6.16 6h12.15l-2.76 5H8.53L6.16 6zM7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+											</svg>
+											@if (shoppingCartItemsCountResult.IsSuccess)
+											{
+												<span class="badge">@shoppingCartItemsCountResult.Value</span>
+											}
+										</button>
+									<ul class="dropdown-menu cart-list">
+
+										@RenderSection("LoadCartItems", required: false)
+
+									</ul>
+								</li>
+							}
+
+								<partial name="_UserIdentityInfoPartial" />
+
+							</ul>
+						</div>
+					</div>
+
+
+					<div class="header-search-nav">
+						<form class="header-item-search">
+							<div class="input-group search-input">
+								@RenderSection("SelectGenre", required: false)
+
+								<input type="text" id="searchBooks" class="form-control"
+									aria-label="Text input with dropdown button" placeholder="Search Books Here">
+
+								<button class="btn" type="button"><i class="flaticon-loupe"></i></button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+
+
+
+			<div class="sticky-header main-bar-wraper navbar-expand-lg">
+				<div class="main-bar clearfix">
+					<div class="container clearfix">
+
+						<div class="logo-header logo-dark">
+							<a href="index.html"><img src="~/images/logo.png" alt="logo"></a>
+						</div>
+
+
+						<button class="navbar-toggler collapsed navicon justify-content-end" type="button"
+							data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+							aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+							<span></span>
+							<span></span>
+							<span></span>
+						</button>
+
+
+						<div class="extra-nav">
+							<div class="extra-cell">
+								<a asp-action="ContactUs" asp-controller="Home" class="btn btn-primary btnhover">Get In
+									Touch</a>
+							</div>
+						</div>
+
+
+						<div class="header-nav navbar-collapse collapse justify-content-start" id="navbarNavDropdown">
+							<div class="logo-header logo-dark">
+								<a href="index.html"><img src="~/images/logo.png" alt=""></a>
+							</div>
+							<ul class="nav navbar-nav">
+								<li class="">
+									<a asp-action="Index" asp-controller="Home"><span>Home</span></a>
+								</li>
+								<li><a asp-action="AboutUs" asp-controller="Home"><span>About Us</span></a></li>
+
+								<li><a asp-action="ContactUs" asp-controller="Home"><span>Contact Us</span></a></li>
+
+								<li><a asp-action="Index" asp-controller="Books"><span>Books</span></a></li>
+
+								<li><a asp-action="Index" asp-controller="Genres"><span>Genres</span></a></li>
+								<li><a asp-action="Index" asp-controller="ShoppingCart"><span>ShoppingCart</span></a></li>
+								<li><a asp-action="Index" asp-controller="Wishlist"><span>Wishlist</span></a></li>
+
+								@if (!User.Identity!.IsAuthenticated)
+								{
+									<li><a asp-action="Register" asp-controller="Account"><span>Register</span></a></li>
+
+									<li><a asp-action="Login" asp-controller="Account"><span>Login</span></a></li>
+								}
+
+							</ul>
+							<div class="dz-social-icon">
+								<ul>
+									<li><a class="fab fa-facebook-f" target="_blank"
+											href="https://www.facebook.com/dexignzone"></a></li>
+									<li><a class="fab fa-twitter" target="_blank"
+											href="https://twitter.com/dexignzones"></a></li>
+									<li><a class="fab fa-linkedin-in" target="_blank"
+											href="https://www.linkedin.com/showcase/3686700/admin/"></a></li>
+									<li><a class="fab fa-instagram" target="_blank"
+											href="https://www.instagram.com/website_templates__/"></a></li>
+								</ul>
+							</div>
+						</div>
+
+
+
+
+					</div>
+				</div>
+			</div>
+
+			<div id="searchResults" class="search-results w-75 mx-auto" style="z-index: -999">
+				<ul class="list-group"></ul>
+			</div>
+
+
+		</header>
+		<!-- Header End -->
+
+		<div class="page-content bg-white">
+
+			@RenderBody()
+
+		</div>
+
+		<!-- Footer -->
+		<footer class="site-footer style-1">
+
+			@RenderSection("FooterCategory", required: false)
+
+			<!-- Footer Top -->
+			<div class="footer-top">
+				<div class="container">
+					<div class="row" style="gap: 80px;">
+						<div class="col-4 wow fadeInUp" data-wow-delay="0.1s">
+							<div class="widget widget_about">
+								<div class="footer-logo logo-white">
+									<a href="index.html"><img src="~/images/logo.png" alt=""></a>
+								</div>
+								<p class="text">Your Online Bookstore for Every Reader. Discover Your Next Favorite Read. Your Destination for Books, New and Old</p>
+							</div>
+						</div>
+
+						<div class=" col-2 wow fadeInUp" data-wow-delay="0.3s">
+							<div class="widget widget_services">
+								<h5 class="">Bookland ?</h5>
+								<ul>
+									<li><a asp-action="Index" asp-controller="ShoppingCart" >Shop Cart</a></li>
+									<li><a asp-action="Login" asp-controller="Account">Login</a></li>
+									<li><a asp-action="AboutUs" asp-controller="Home" >About Us</a></li>
+									<li><a asp-action="ContactUs" asp-controller="Home">Contact us</a></li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="col-4 wow fadeInUp" data-wow-delay="0.5s">
+							<div class="widget widget_getintuch">
+								<h5 class="footer-title">Get in Touch With Us</h5>
+								<ul>
+									<li>
+										<i class="flaticon-placeholder"></i>
+										<span>Shebin El-Kom,<br> Menofia</span>
+									</li>
+									<li>
+										<i class="flaticon-phone"></i>
+										<span>
+											+20 121 112 9151<br>
+											+20 101 657 6855
+										</span>
+									</li>
+									<li>
+										<i class="flaticon-email"></i>
+										<span>
+											abodashams0@gmail.com<br>
+											info@bookland.id
+										</span>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Footer Top End -->
+			<!-- Footer Bottom -->
+			<div class="footer-bottom">
+				<div class="container">
+					<div class="row fb-inner">
+						<div class=" text-center">
+							<p class="copyright-text"><span style="color:#EAA451;">Bookland</span>  Book Store Ecommerce Website - © @(DateTimeOffset.Now.Year) All Rights Reserved</p>
+						</div>
+
+					</div>
+				</div>
+			</div>
+			<!-- Footer Bottom End -->
+
+		</footer>
+		<!-- Footer End -->
+	
+
+		<button class="scroltop" type="button"><i class="fas fa-arrow-up"></i></button>
+	</div>
+
+	<!-- JAVASCRIPT FILES ========================================= -->
+	<script src="~/js/jquery.min.js"></script><!-- JQUERY MIN JS -->
+	<script src="~/vendor/wow/wow.min.js"></script><!-- WOW JS -->
+	<script src="~/vendor/bootstrap/dist/bootstrap.bundle.min.js"></script><!-- BOOTSTRAP MIN JS -->
+	<script src="~/vendor/bootstrap-select/js/bootstrap-select.min.js"></script><!-- BOOTSTRAP SELECT MIN JS -->
+	<script src="~/vendor/counter/waypoints-min.js"></script><!-- WAYPOINTS JS -->
+	<script src="~/vendor/counter/counterup.min.js"></script><!-- COUNTERUP JS -->
+	<script src="~/vendor/swiper/swiper-bundle.min.js"></script><!-- SWIPER JS -->
+	<script src="~/js/dz.carousel.js"></script><!-- DZ CAROUSEL JS -->
+	<script src="~/js/dz.ajax.js"></script><!-- AJAX -->
+	<script src="~/js/custom.js"></script><!-- CUSTOM JS -->
+    <script src="~/js/scriptsignup.js"></script>
+	<script src="~/js/scriptlogin.js"></script>
+	<script src="~/js/script404.js"></script>
+
+	<script>
+		document.getElementById('searchBooks').addEventListener('input', function () {
+			var searchTerm = this.value;
+
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', `@baseUrl/Books/SearchBooks?searchTerm=` + encodeURIComponent(searchTerm), true);
+			xhr.setRequestHeader('Accept', 'application/json');
+
+			xhr.onload = function () {
+				if (xhr.status === 200) {
+					var result = JSON.parse(xhr.responseText);
+					console.log(result);
+					var bookList = document.querySelector('#searchResults .list-group');
+					bookList.innerHTML = '';
+
+					result.forEach(function (book) {
+						var listItem = document.createElement('li');
+						listItem.className = 'list-group-item d-flex align-items-center';
+
+						listItem.innerHTML = `
+
+							<div style="flex-grow: 1;">
+								<a href="/Books/Details/${book.id}" alt="${book.title}">
+									<img src="${book.pictureUrl}" alt="${book.title}" class="img-thumbnail" style="width: 50px; height: auto; margin-right: 10px;">
+								</a>
+								<h5 class="mb-1">${book.title}</h5>
+								<p class="mb-1">Author: ${book.author}</p>
+								<small>Genre: ${book.genre || 'N/A'}</small>
+							</div>
+						`;
+
+						bookList.appendChild(listItem);
+					});
+
+				} else {
+					console.error('Error retrieving books:', xhr.statusText);
+				}
+			};
+
+			xhr.onerror = function () {
+				console.error('Request Search Books failed');
+			};
+
+			xhr.send();
+		});
+	</script>
+
+	@await Component.InvokeAsync("Notyf")
+	@await RenderSectionAsync("Scripts", required: false)
+
+
+</body>
+
+</html>

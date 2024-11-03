@@ -1,0 +1,116 @@
+﻿@using Bookify.Services.Contracts
+@model PaginationVM<BookForListVM>
+@inject IReviewsService reviewsService
+
+@{
+    ViewData["Title"] = "Books";
+}
+
+<section class="content-inner-1 border-bottom">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="title">Books</h4>
+        </div>
+
+        <div class="row">
+            @foreach (var book in Model.Data)
+            {
+                <div class="col-md-12 col-sm-12 mb-4">
+                    <div class="dz-shop-card style-2 d-flex">
+                        <!-- Image Section (45% width) -->
+                        <div class="dz-media" style="width: 25%;">
+                            <img src="@book.PictureUrl" alt="@book.Title" class="img-fluid">
+                        </div>
+
+                        <!-- Content Section (55% width) -->
+                        <div class="dz-content" style="width: 75%;">
+                            <div class="dz-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <ul class="dz-tags">
+
+                                        @if(Model.Data.SelectMany(x => x.Tags).Any())
+                                        {
+                                            @foreach (var tag in book.Tags)
+                                            {
+                                                <li><a asp-action="Index">@tag.TagName</a></li>
+                                            }
+                                        }
+                                    </ul>
+                                    <h4 class="title mb-0">
+                                        <a asp-action="Details" asp-controller="Books" asp-route-id="@book.Id">@book.Title</a>
+                                    </h4>
+                                </div>
+                                <div class="price">
+                                    <span class="price-num text-primary">@book.Price.ToString("C")</span>
+                                </div>
+                            </div>
+
+                            <div class="dz-body">
+                                <p class="dz-para">@book.Description</p>
+                                <div class="dz-rating-box d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <a href="pricing.html" class="badge">Get 20% Discount for today</a>
+                                        <a href="pricing.html" class="badge">50% OFF Discount</a>
+                                        <a href="pricing.html" class="badge next-badge">See 2+ promos</a>
+                                    </div>
+                                    <div class="review-num">
+                                        <h4>@((await reviewsService.GetAverageRatingForBookAsync(book.Id)).Value)</h4>
+                                        <ul class="dz-rating">
+                                            @for (int i = 1; i <= (await reviewsService.GetAverageRatingForBookAsync(book.Id)).Value; i++)
+                                            {
+                                                <li><i class="fa-solid fa-star text-yellow"></i></li>
+                                            }
+                                        </ul>
+                                        <span><a href="javascript:void(0);"> @book.Reviews.Count Reviews</a></span>
+                                    </div>
+                                </div>
+
+                                <div class="rate d-flex justify-content-between align-items-center mt-2">
+                                    <ul class="book-info">
+                                        <li><span>Written by</span> @book.Author</li>
+                                        <li><span>Publisher</span> @book.Publisher</li>
+                                        <li><span>Year</span> @book.DatePublished.Year</li>
+                                    </ul>
+                                    <div>
+                                        <form asp-action="AddToBasket" asp-controller="ShoppingCart" method="post">
+                                            <input type="hidden" name="productId" value="@book.Id" />
+                                            <input type="hidden" name="quantity" value="1" />
+                                            <button type="submit" class="btn btn-secondary btnhover btnhover2">
+                                                <i class="flaticon-shopping-cart-1 m-r10"></i> Add to cart
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="row page mt-0">
+            <div class="col-md-6">
+                <p class="page-text">Showing @Model.PageSize from @Model.TotalCount data</p>
+            </div>
+            <div class="col-md-6">
+                <nav aria-label="Blog Pagination">
+                    <ul class="pagination style-1 p-t20">
+                        @if(Model.CurrentPage > 1)
+                        {
+                            <li class="page-item"><a class="page-link prev" asp-action="Index" asp-route-pageNumber="@(Model.CurrentPage - 1)">Prev</a></li>
+                        }
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item"><a class="page-link active" asp-action="Index" asp-route-pageNumber="@i" >@i</a></li>
+                        }
+
+                        @if(Model.CurrentPage < Model.TotalPages)
+                        {
+                            <li class="page-item"><a class="page-link next" asp-action="Index" asp-route-pageNumber="@(Model.CurrentPage + 1)">Next</a></li>
+                        } 
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
